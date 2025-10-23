@@ -1,0 +1,124 @@
+-- Assigning the warehouse to the account 
+USE WAREHOUSE COMPUTE_WH;
+
+-- Creating a database named as SALES_DATABASE
+CREATE DATABASE IF NOT EXISTS SQL_CLASS_13;
+
+-- CREATING a schema for the SALES_DATABASE 
+CREATE SCHEMA IF NOT EXISTS SQL_CLASS_13_SCHEMA;
+
+-- USING THE DATABASE CREATED SALES_DATABASE 
+USE DATABASE SQL_CLASS_13;
+
+-- USING THE SCHEMA CREATED SALES_SCHEMA
+USE SCHEMA SQL_CLASS_13_SCHEMA;
+
+-- CREATING THE TABLE
+CREATE OR REPLACE TABLE EMPLOYEE_DATA (
+    EMP_ID INTEGER,
+    EMP_NAME STRING,
+    DEPT STRING,
+    SALARY NUMBER(10,2),
+    JOIN_DATE DATE,
+    BONUS NUMBER(10,2),
+    CITY STRING
+);
+
+
+-- ADDING THE DATA 
+INSERT INTO EMPLOYEE_DATA (EMP_ID, EMP_NAME, DEPT, SALARY, JOIN_DATE, BONUS, CITY) VALUES
+(101, 'Ramesh', 'HR', 55000, '2021-02-15', 5000, 'Mumbai'),
+(102, 'Priya', 'IT', 80000, '2022-07-21', 8000, 'Bengaluru'),
+(103, 'Raj', 'IT', 75000, '2020-10-30', 7000, 'Delhi'),
+(104, 'Neha', 'Finance', 62000, '2023-01-10', 6000, 'Kolkata'),
+(105, 'Arjun', 'HR', 54000, '2022-04-05', 4500, 'Mumbai'),
+(106, 'Isha', 'Finance', 68000, '2021-11-23', 7500, 'Chennai'),
+(107, 'Manav', 'Marketing', 72000, '2021-06-18', 6500, 'Pune'),
+(108, 'Sneha', 'IT', 79000, '2023-03-12', 9000, 'Hyderabad'),
+(109, 'Tara', 'Finance', 69000, '2020-12-01', 7000, 'Ahmedabad'),
+(110, 'Karan', 'Marketing', 61000, '2022-08-25', 5500, 'Bhopal'),
+(111, 'Divya', 'HR', 56000, '2023-04-15', 4800, 'Jaipur'),
+(112, 'Aman', 'IT', 83000, '2021-09-09', 8500, 'Bengaluru'),
+(113, 'Reena', 'Finance', 71000, '2022-05-11', 6700, 'Delhi'),
+(114, 'Vikram', 'Marketing', 73000, '2020-03-25', 7200, 'Mumbai'),
+(115, 'Sonal', 'Finance', 66000, '2023-02-08', 5600, 'Pune'),
+(116, 'Mehul', 'HR', 52000, '2021-12-19', 4300, 'Ahmedabad'),
+(117, 'Anjali', 'IT', 84500, '2020-08-14', 9100, 'Hyderabad'),
+(118, 'Yash', 'Marketing', 70500, '2022-01-01', 6900, 'Indore'),
+(119, 'Bhavna', 'Finance', 67500, '2021-06-06', 6400, 'Surat'),
+(120, 'Nikhil', 'HR', 59000, '2023-06-30', 5000, 'Nagpur');
+
+select * from EMPLOYEE_DATA;
+
+--List the cities where the department 'Finance' exists, and for each such city, show 
+--how many finance employees joined in each month. Sort by month number and city name.
+
+
+SELECT CITY,
+to_char(JOIN_DATE,'MM')as date_month,
+DEPT,COUNT(*)
+from EMPLOYEE_DATA
+where DEPT='Finance'
+group by CITY,to_char(JOIN_DATE,'MM'),DEPT
+order by to_char(JOIN_DATE,'MM') ASC,CITY DESC;
+
+--For each department, find the employee with the highest total compensation (salary + bonus). 
+   --  Show name, department, city, and total compensation.
+
+
+SELECT EMP_NAME, DEPT,
+CITY,
+MAX(SALARY+BONUS) AS total_compensation
+FROM EMPLOYEE_DATA
+GROUP BY DEPT,EMP_NAME,CITY,SALARY,BONUS;
+
+SELECT EMP_NAME
+FROM EMPLOYEE_DATA
+WHERE EMP_NAME LIKE '%n%a';
+
+SELECT EMP_NAME,JOIN_DATE
+FROM EMPLOYEE_DATA
+WHERE JOIN_DATE LIKE '%-01-%';
+
+/*Write the sql statement to give the following output 
+    1. Employee Name 
+    2. Joined Date 
+    3. Emp_tenure 
+        if the employee has joined before '2021-01-01' THEN 'Old Employee'
+        if the employee has joined between '2021-01-01' and '2022-12-31' then 'mid-term'
+        otherwise 'New Joiner'
+        */
+
+
+SELECT EMP_NAME,JOIN_DATE,
+CASE
+    WHEN JOIN_DATE <'2021-01-01' THEN 'OLD_EMP'
+    WHEN JOIN_DATE BETWEEN '2021-01-01' AND '2022-12-31' THEN 'mid-term'
+    ELSE 'New Joiner'
+END AS Emp_tenure
+FROM EMPLOYEE_DATA;
+
+
+
+
+
+
+
+SELECT ORDER_ID, UPPER(CUSTOMER_NAME) AS CUSTOMER_NAME, PRODUCT_NAME, TO_CHAR(ORDER_DATE,'MMMM-YYYY') AS MONTH_YEAR,
+SUM(QUANTITY) AS QUANTITY,
+SUM(QUANTITY * PRICE_PER_UNIT) AS TOTAL_AMOUNT
+FROM ORDERS_DATA
+WHERE PRODUCT_CATEGORY IN ('Electronics', 'Books')
+and PRODUCT_NAME LIKE '%Power%' OR PRODUCT_NAME LIKE '%Python'
+and MONTH(ORDER_DATE) IN (3,4)
+AND YEAR(ORDER_DATE) = 2025
+GROUP BY ORDER_ID, CUSTOMER_NAME, PRODUCT_NAME, ORDER_DATE;
+
+
+
+
+
+
+
+
+   
