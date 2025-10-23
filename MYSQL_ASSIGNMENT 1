@@ -1,0 +1,823 @@
+/*
+Assignment 1 - Basic Statements:
+1.	Create a database named training.
+2.	Create a table ‘demography’ with the following columns inside training database
+a.	CustID integer auto-increment 
+b.	Name varchar(50)
+c.	Age integer
+d.	Gender varcahr(1)
+3.	Insert the following values into the table ‘demography’
+a.	Name=’John’, Age=25, Gender=’M’
+4.	Insert the following values into the table ‘demography’ using a single query
+a.	Name = ’Pawan’, Age = 26, Gender=’M’
+b.	Name = ‘Hema’, Age=31, Gender=’F’
+5.	Insert the following value into the table ‘demography’
+a.	Name = ‘Rekha’, Gender=’F’
+*/
+CREATE DATABASE training;
+USE DATABASE training;
+
+CREATE OR REPLACE TABLE demography (
+CustID integer AUTOINCREMENT START 1 INCREMENT 1 ORDER,
+Name varchar(50),
+Age integer,
+Gender varchAr(1)
+);
+INSERT INTO demography (Name,Age,Gender) VALUES('John',25,'M');
+INSERT INTO demography (Name,Age,Gender) VALUES('Pawan',26,'M');
+INSERT INTO demography (Name,Age,Gender) VALUES('Hema',31,'F');
+INSERT INTO demography (Name,Gender) VALUES('Reha','F');
+
+--Retrieve all  rows and columns from table ‘demography’
+SELECT * FROM demography;
+
+--Update the age to NULL for Name = ‘John’. Note that the NULL used here is MySQL NULL and not string NULL
+UPDATE demography
+SET AGE=NULL
+WHERE NAME='John';
+
+--Retrieve all the rows from table ‘demography’ where Age is NULL
+SELECT * 
+FROM demography
+WHERE AGE IS null;
+
+--Delete all the rows from the table ‘demography’
+DELETE
+FROM DEMOGRAPHY;
+
+--Drop the table ‘demography’
+DROP TABLE DEMOGRAPHY;
+----------------------------------------------------------------------------------------------------------------------
+
+-- Create sequences for auto-incrementing IDs
+CREATE OR REPLACE SEQUENCE seq_department START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_branch START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_employee START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_customer START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_officer START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_account START = 1 INCREMENT = 1;
+CREATE OR REPLACE SEQUENCE seq_transaction START = 1 INCREMENT = 1;
+
+-- Tables
+
+CREATE OR REPLACE TABLE department (
+  dept_id SMALLINT DEFAULT seq_department.NEXTVAL PRIMARY KEY,
+  name VARCHAR(20) NOT NULL
+);
+
+CREATE OR REPLACE TABLE branch (
+  branch_id SMALLINT DEFAULT seq_branch.NEXTVAL PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  address VARCHAR(30),
+  city VARCHAR(20),
+  state VARCHAR(2),
+  zip VARCHAR(12)
+);
+
+CREATE OR REPLACE TABLE employee (
+  emp_id SMALLINT DEFAULT seq_employee.NEXTVAL PRIMARY KEY,
+  fname VARCHAR(20) NOT NULL,
+  lname VARCHAR(20) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  superior_emp_id SMALLINT,
+  dept_id SMALLINT,
+  title VARCHAR(20),
+  assigned_branch_id SMALLINT,
+  CONSTRAINT fk_e_emp_id FOREIGN KEY (superior_emp_id) REFERENCES employee (emp_id),
+  CONSTRAINT fk_dept_id FOREIGN KEY (dept_id) REFERENCES department (dept_id),
+  CONSTRAINT fk_e_branch_id FOREIGN KEY (assigned_branch_id) REFERENCES branch (branch_id)
+);
+
+CREATE OR REPLACE TABLE product_type (
+  product_type_cd VARCHAR(10) NOT NULL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL
+);
+
+CREATE OR REPLACE TABLE product (
+  product_cd VARCHAR(10) NOT NULL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  product_type_cd VARCHAR(10) NOT NULL,
+  date_offered DATE,
+  date_retired DATE,
+  CONSTRAINT fk_product_type_cd FOREIGN KEY (product_type_cd) REFERENCES product_type (product_type_cd)
+);
+
+CREATE OR REPLACE TABLE customer (
+  cust_id INTEGER DEFAULT seq_customer.NEXTVAL PRIMARY KEY,
+  fed_id VARCHAR(12) NOT NULL,
+  cust_type_cd VARCHAR(1) NOT NULL,
+  address VARCHAR(30),
+  city VARCHAR(20),
+  state VARCHAR(20),
+  postal_code VARCHAR(10)
+);
+
+CREATE OR REPLACE TABLE individual (
+  cust_id INTEGER NOT NULL PRIMARY KEY,
+  fname VARCHAR(30) NOT NULL,
+  lname VARCHAR(30) NOT NULL,
+  birth_date DATE,
+  CONSTRAINT fk_i_cust_id FOREIGN KEY (cust_id) REFERENCES customer (cust_id)
+);
+
+CREATE OR REPLACE TABLE business (
+  cust_id INTEGER NOT NULL PRIMARY KEY,
+  name VARCHAR(40) NOT NULL,
+  state_id VARCHAR(10) NOT NULL,
+  incorp_date DATE,
+  CONSTRAINT fk_b_cust_id FOREIGN KEY (cust_id) REFERENCES customer (cust_id)
+);
+
+CREATE OR REPLACE TABLE officer (
+  officer_id SMALLINT DEFAULT seq_officer.NEXTVAL PRIMARY KEY,
+  cust_id INTEGER NOT NULL,
+  fname VARCHAR(30) NOT NULL,
+  lname VARCHAR(30) NOT NULL,
+  title VARCHAR(20),
+  start_date DATE NOT NULL,
+  end_date DATE,
+  CONSTRAINT fk_o_cust_id FOREIGN KEY (cust_id) REFERENCES business (cust_id)
+);
+
+CREATE OR REPLACE TABLE account (
+  account_id INTEGER DEFAULT seq_account.NEXTVAL PRIMARY KEY,
+  product_cd VARCHAR(10) NOT NULL,
+  cust_id INTEGER NOT NULL,
+  open_date DATE NOT NULL,
+  close_date DATE,
+  last_activity_date DATE,
+  status VARCHAR(10),
+  open_branch_id SMALLINT,
+  open_emp_id SMALLINT,
+  avail_balance NUMBER(10,2),
+  pending_balance NUMBER(10,2),
+  CONSTRAINT fk_product_cd FOREIGN KEY (product_cd) REFERENCES product (product_cd),
+  CONSTRAINT fk_a_cust_id FOREIGN KEY (cust_id) REFERENCES customer (cust_id),
+  CONSTRAINT fk_a_branch_id FOREIGN KEY (open_branch_id) REFERENCES branch (branch_id),
+  CONSTRAINT fk_a_emp_id FOREIGN KEY (open_emp_id) REFERENCES employee (emp_id)
+);
+
+CREATE OR REPLACE TABLE transaction (
+  txn_id INTEGER DEFAULT seq_transaction.NEXTVAL PRIMARY KEY,
+  txn_date TIMESTAMP NOT NULL,
+  account_id INTEGER NOT NULL,
+  txn_type_cd VARCHAR(3),
+  amount NUMBER(10,2) NOT NULL,
+  teller_emp_id SMALLINT,
+  execution_branch_id SMALLINT,
+  funds_avail_date TIMESTAMP,
+  CONSTRAINT fk_t_account_id FOREIGN KEY (account_id) REFERENCES account (account_id),
+  CONSTRAINT fk_teller_emp_id FOREIGN KEY (teller_emp_id) REFERENCES employee (emp_id),
+  CONSTRAINT fk_exec_branch_id FOREIGN KEY (execution_branch_id) REFERENCES branch (branch_id)
+);
+
+/* end table creation */
+
+/* begin data population */
+
+/* department data */
+insert into department (name) values ('Operations');
+insert into department (name) values ('Loans');
+insert into department (name) values ('Administration');
+
+select * from department;
+
+/* branch data */
+insert into branch (name, address, city, state, zip)
+values ('Headquarters', '3882 Main St.', 'Waltham', 'MA', '02451');
+insert into branch (name, address, city, state, zip)
+values ('Woburn Branch', '422 Maple St.', 'Woburn', 'MA', '01801');
+insert into branch (name, address, city, state, zip)
+values ('Quincy Branch', '125 Presidential Way', 'Quincy', 'MA', '02169');
+insert into branch (name, address, city, state, zip)
+values ('So. NH Branch', '378 Maynard Ln.', 'Salem', 'NH', '03079');
+
+/* employee data */
+-- Michael Smith (emp_id=1, no superior)
+insert into employee (fname, lname, start_date, dept_id, title, assigned_branch_id)
+select 'Michael', 'Smith', '2001-06-22',
+  (select dept_id from department where name = 'Administration'),
+  'President',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Susan Barker (emp_id=2, superior is Michael Smith)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Susan', 'Barker', '2002-09-12',
+  (select emp_id from employee where fname = 'Michael' and lname = 'Smith'),
+  (select dept_id from department where name = 'Administration'),
+  'Vice President',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Robert Tyler (emp_id=3, superior is Michael Smith)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Robert', 'Tyler', '2000-02-09',
+  (select emp_id from employee where fname = 'Michael' and lname = 'Smith'),
+  (select dept_id from department where name = 'Administration'),
+  'Treasurer',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Susan Hawthorne (emp_id=4, superior is Robert Tyler)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Susan', 'Hawthorne', '2002-04-24',
+  (select emp_id from employee where fname = 'Robert' and lname = 'Tyler'),
+  (select dept_id from department where name = 'Operations'),
+  'Operations Manager',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- John Gooding (emp_id=5, superior is Susan Hawthorne)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'John', 'Gooding', '2003-11-14',
+  (select emp_id from employee where fname = 'Susan' and lname = 'Hawthorne'),
+  (select dept_id from department where name = 'Loans'),
+  'Loan Manager',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Helen Fleming (emp_id=6, superior is Susan Hawthorne)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Helen', 'Fleming', '2004-03-17',
+  (select emp_id from employee where fname = 'Susan' and lname = 'Hawthorne'),
+  (select dept_id from department where name = 'Operations'),
+  'Head Teller',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Chris Tucker (emp_id=7, superior is Helen Fleming)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Chris', 'Tucker', '2004-09-15',
+  (select emp_id from employee where fname = 'Helen' and lname = 'Fleming'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Sarah Parker (emp_id=8, superior is Helen Fleming)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Sarah', 'Parker', '2002-12-02',
+  (select emp_id from employee where fname = 'Helen' and lname = 'Fleming'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Jane Grossman (emp_id=9, superior is Helen Fleming)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Jane', 'Grossman', '2002-05-03',
+  (select emp_id from employee where fname = 'Helen' and lname = 'Fleming'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Headquarters');
+
+-- Paula Roberts (emp_id=10, superior is Susan Hawthorne)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Paula', 'Roberts', '2002-07-27',
+  (select emp_id from employee where fname = 'Susan' and lname = 'Hawthorne'),
+  (select dept_id from department where name = 'Operations'),
+  'Head Teller',
+  (select branch_id from branch where name = 'Woburn Branch');
+
+-- Thomas Ziegler (emp_id=11, superior is Paula Roberts)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Thomas', 'Ziegler', '2000-10-23',
+  (select emp_id from employee where fname = 'Paula' and lname = 'Roberts'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Woburn Branch');
+
+-- Samantha Jameson (emp_id=12, superior is Paula Roberts)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Samantha', 'Jameson', '2003-01-08',
+  (select emp_id from employee where fname = 'Paula' and lname = 'Roberts'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Woburn Branch');
+
+-- John Blake (emp_id=13, superior is Susan Hawthorne)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'John', 'Blake', '2000-05-11',
+  (select emp_id from employee where fname = 'Susan' and lname = 'Hawthorne'),
+  (select dept_id from department where name = 'Operations'),
+  'Head Teller',
+  (select branch_id from branch where name = 'Quincy Branch');
+
+-- Cindy Mason (emp_id=14, superior is John Blake)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Cindy', 'Mason', '2002-08-09',
+  (select emp_id from employee where fname = 'John' and lname = 'Blake'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Quincy Branch');
+
+-- Frank Portman (emp_id=15, superior is John Blake)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Frank', 'Portman', '2003-04-01',
+  (select emp_id from employee where fname = 'John' and lname = 'Blake'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'Quincy Branch');
+
+-- Theresa Markham (emp_id=16, superior is Susan Hawthorne)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Theresa', 'Markham', '2001-03-15',
+  (select emp_id from employee where fname = 'Susan' and lname = 'Hawthorne'),
+  (select dept_id from department where name = 'Operations'),
+  'Head Teller',
+  (select branch_id from branch where name = 'So. NH Branch');
+
+-- Beth Fowler (emp_id=17, superior is Theresa Markham)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Beth', 'Fowler', '2002-06-29',
+  (select emp_id from employee where fname = 'Theresa' and lname = 'Markham'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'So. NH Branch');
+
+-- Rick Tulman (emp_id=18, superior is Theresa Markham)
+insert into employee (fname, lname, start_date, superior_emp_id, dept_id, title, assigned_branch_id)
+select 'Rick', 'Tulman', '2002-12-12',
+  (select emp_id from employee where fname = 'Theresa' and lname = 'Markham'),
+  (select dept_id from department where name = 'Operations'),
+  'Teller',
+  (select branch_id from branch where name = 'So. NH Branch');
+
+/* product type data */
+insert into product_type (product_type_cd, name)
+values ('ACCOUNT','Customer Accounts');
+insert into product_type (product_type_cd, name)
+values ('LOAN','Individual and Business Loans');
+insert into product_type (product_type_cd, name)
+values ('INSURANCE','Insurance Offerings');
+
+/* product data */
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('CHK','checking account','ACCOUNT','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('SAV','savings account','ACCOUNT','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('MM','money market account','ACCOUNT','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('CD','certificate of deposit','ACCOUNT','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('MRT','home mortgage','LOAN','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('AUT','auto loan','LOAN','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('BUS','business line of credit','LOAN','2000-01-01');
+insert into product (product_cd, name, product_type_cd, date_offered)
+values ('SBL','small business loan','LOAN','2000-01-01');
+
+/* residential customer data */
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('111-11-1111', 'I', '47 Mockingbird Ln', 'Lynnfield', 'MA', '01940');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'James', 'Hadley', '1972-04-22' from customer
+where fed_id = '111-11-1111';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('222-22-2222', 'I', '372 Clearwater Blvd', 'Woburn', 'MA', '01801');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Susan', 'Tingley', '1968-08-15' from customer
+where fed_id = '222-22-2222';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('333-33-3333', 'I', '18 Jessup Rd', 'Quincy', 'MA', '02169');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Frank', 'Tucker', '1958-02-06' from customer
+where fed_id = '333-33-3333';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('444-44-4444', 'I', '12 Buchanan Ln', 'Waltham', 'MA', '02451');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'John', 'Hayward', '1966-12-22' from customer
+where fed_id = '444-44-4444';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('555-55-5555', 'I', '2341 Main St', 'Salem', 'NH', '03079');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Charles', 'Frasier', '1971-08-25' from customer
+where fed_id = '555-55-5555';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('666-66-6666', 'I', '12 Blaylock Ln', 'Waltham', 'MA', '02451');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'John', 'Spencer', '1962-09-14' from customer
+where fed_id = '666-66-6666';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('777-77-7777', 'I', '29 Admiral Ln', 'Wilmington', 'MA', '01887');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Margaret', 'Young', '1947-03-19' from customer
+where fed_id = '777-77-7777';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('888-88-8888', 'I', '472 Freedom Rd', 'Salem', 'NH', '03079');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Louis', 'Blake', '1977-07-01' from customer
+where fed_id = '888-88-8888';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('999-99-9999', 'I', '29 Maple St', 'Newton', 'MA', '02458');
+insert into individual (cust_id, fname, lname, birth_date)
+select cust_id, 'Richard', 'Farley', '1968-06-16' from customer
+where fed_id = '999-99-9999';
+
+/* corporate customer data */
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('04-1111111', 'B', '7 Industrial Way', 'Salem', 'NH', '03079');
+insert into business (cust_id, name, state_id, incorp_date)
+select cust_id, 'Chilton Engineering', '12-345-678', '1995-05-01' from customer
+where fed_id = '04-1111111';
+insert into officer (cust_id, fname, lname, title, start_date)
+select cust_id, 'John', 'Chilton', 'President', '1995-05-01'
+from customer
+where fed_id = '04-1111111';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('04-2222222', 'B', '287A Corporate Ave', 'Wilmington', 'MA', '01887');
+insert into business (cust_id, name, state_id, incorp_date)
+select cust_id, 'Northeast Cooling Inc.', '23-456-789', '2001-01-01' from customer
+where fed_id = '04-2222222';
+insert into officer (cust_id, fname, lname, title, start_date)
+select cust_id, 'Paul', 'Hardy', 'President', '2001-01-01'
+from customer
+where fed_id = '04-2222222';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('04-3333333', 'B', '789 Main St', 'Salem', 'NH', '03079');
+insert into business (cust_id, name, state_id, incorp_date)
+select cust_id, 'Superior Auto Body', '34-567-890', '2002-06-30' from customer
+where fed_id = '04-3333333';
+insert into officer (cust_id, fname, lname, title, start_date)
+select cust_id, 'Carl', 'Lutz', 'President', '2002-06-30'
+from customer
+where fed_id = '04-3333333';
+
+insert into customer (fed_id, cust_type_cd, address, city, state, postal_code)
+values ('04-4444444', 'B', '4772 Presidential Way', 'Quincy', 'MA', '02169');
+insert into business (cust_id, name, state_id, incorp_date)
+select cust_id, 'AAA Insurance Inc.', '45-678-901', '1999-05-01' from customer
+where fed_id = '04-4444444';
+insert into officer (cust_id, fname, lname, title, start_date)
+select cust_id, 'Stanley', 'Cheswick', 'President', '1999-05-01'
+from customer
+where fed_id = '04-4444444';
+
+/* residential account data */
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Woburn' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2000-01-15' open_date, '2005-01-04' last_date,
+    1057.75 avail, 1057.75 pend union all
+  select 'SAV' prod_cd, '2000-01-15' open_date, '2004-12-19' last_date,
+    500.00 avail, 500.00 pend union all
+  select 'CD' prod_cd, '2004-06-30' open_date, '2004-06-30' last_date,
+    3000.00 avail, 3000.00 pend) a
+where c.fed_id = '111-11-1111';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Woburn' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2001-03-12' open_date, '2004-12-27' last_date,
+    2258.02 avail, 2258.02 pend union all
+  select 'SAV' prod_cd, '2001-03-12' open_date, '2004-12-11' last_date,
+    200.00 avail, 200.00 pend) a
+where c.fed_id = '222-22-2222';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Quincy' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2002-11-23' open_date, '2004-11-30' last_date,
+    1057.75 avail, 1057.75 pend union all
+  select 'MM' prod_cd, '2002-12-15' open_date, '2004-12-05' last_date,
+    2212.50 avail, 2212.50 pend) a
+where c.fed_id = '333-33-3333';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Waltham' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2003-09-12' open_date, '2005-01-03' last_date,
+    534.12 avail, 534.12 pend union all
+  select 'SAV' prod_cd, '2000-01-15' open_date, '2004-10-24' last_date,
+    767.77 avail, 767.77 pend union all
+  select 'MM' prod_cd, '2004-09-30' open_date, '2004-11-11' last_date,
+    5487.09 avail, 5487.09 pend) a
+where c.fed_id = '444-44-4444';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Salem' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2004-01-27' open_date, '2005-01-05' last_date,
+    2237.97 avail, 2897.97 pend) a
+where c.fed_id = '555-55-5555';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Waltham' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2002-08-24' open_date, '2004-11-29' last_date,
+    122.37 avail, 122.37 pend union all
+  select 'CD' prod_cd, '2004-12-28' open_date, '2004-12-28' last_date,
+    10000.00 avail, 10000.00 pend) a
+where c.fed_id = '666-66-6666';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Woburn' limit 1) e
+  cross join
+  (select 'CD' prod_cd, '2004-01-12' open_date, '2004-01-12' last_date,
+    5000.00 avail, 5000.00 pend) a
+where c.fed_id = '777-77-7777';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Salem' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2001-05-23' open_date, '2005-01-03' last_date,
+    3487.19 avail, 3487.19 pend union all
+  select 'SAV' prod_cd, '2001-05-23' open_date, '2004-10-12' last_date,
+    387.99 avail, 387.99 pend) a
+where c.fed_id = '888-88-8888';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Waltham' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2003-07-30' open_date, '2004-12-15' last_date,
+    125.67 avail, 125.67 pend union all
+  select 'MM' prod_cd, '2004-10-28' open_date, '2004-10-28' last_date,
+    9345.55 avail, 9845.55 pend union all
+  select 'CD' prod_cd, '2004-06-30' open_date, '2004-06-30' last_date,
+    1500.00 avail, 1500.00 pend) a
+where c.fed_id = '999-99-9999';
+
+/* corporate account data */
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Salem' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2002-09-30' open_date, '2004-12-15' last_date,
+    23575.12 avail, 23575.12 pend union all
+  select 'BUS' prod_cd, '2002-10-01' open_date, '2004-08-28' last_date,
+    0 avail, 0 pend) a
+where c.fed_id = '04-1111111';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Woburn' limit 1) e
+  cross join
+  (select 'BUS' prod_cd, '2004-03-22' open_date, '2004-11-14' last_date,
+    9345.55 avail, 9345.55 pend) a
+where c.fed_id = '04-2222222';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Salem' limit 1) e
+  cross join
+  (select 'CHK' prod_cd, '2003-07-30' open_date, '2004-12-15' last_date,
+    38552.05 avail, 38552.05 pend) a
+where c.fed_id = '04-3333333';
+insert into account (product_cd, cust_id, open_date,
+  last_activity_date, status, open_branch_id,
+  open_emp_id, avail_balance, pending_balance)
+select a.prod_cd, c.cust_id, a.open_date, a.last_date, 'ACTIVE',
+  e.branch_id, e.emp_id, a.avail, a.pend
+from customer c cross join
+  (select branch_id, emp_id
+  from branch b inner join employee e on e.assigned_branch_id = b.branch_id
+  where b.city = 'Quincy' limit 1) e
+  cross join
+  (select 'SBL' prod_cd, '2004-02-22' open_date, '2004-12-17' last_date,
+    50000.00 avail, 50000.00 pend) a
+where c.fed_id = '04-4444444';
+
+/* put $100 in all checking/savings accounts on date account opened */
+insert into transaction (txn_date, account_id, txn_type_cd,
+  amount, funds_avail_date)
+select a.open_date, a.account_id, 'CDT', 100, a.open_date
+from account a
+where a.product_cd IN ('CHK','SAV','CD','MM');
+
+/* end data population */
+
+--Retrieve the account ID, customer ID, and available balance for all accounts whose status equals 'ACTIVE' and whose available balance is greater than $2,500
+SELECT ACCOUNT_ID,CUST_ID,AVAIL_BALANCE
+FROM ACCOUNT
+WHERE STATUS='ACTIVE' AND AVAIL_BALANCE>2500;
+
+-- Construct a query that retrieves all accounts opened in 2002.
+SELECT *
+FROM ACCOUNT
+WHERE OPEN_DATE BETWEEN '2002-01-01' AND '2002-12-30';
+
+-- Retrieve the account ID, available balance and pending balance for all accounts where available balance is not equal to pending balance
+SELECT ACCOUNT_ID,AVAIL_BALANCE,PENDING_BALANCE
+FROM ACCOUNT
+WHERE AVAIL_BALANCE=PENDING_BALANCE;
+
+-- Retrieve account ID, Product code for the account ID’s 1,10,23,27
+SELECT ACCOUNT_ID,PRODUCT_CD
+FROM ACCOUNT
+WHERE ACCOUNT_ID IN (1,10,23,27);
+
+-- Retrieve account ID, available balance from all those accounts whose available balance is in between 100 and 200
+SELECT ACCOUNT_ID,AVAIL_BALANCE
+FROM ACCOUNT
+WHERE AVAIL_BALANCE BETWEEN 100 AND 200;
+
+---------------------------------------------------------------------------------------------------------------------
+-- Construct a query that counts the number of rows in the account table
+SELECT COUNT(ACCOUNT_ID)
+FROM ACCOUNT;
+
+-- Retrieve the first two rows from account table
+SELECT *
+FROM ACCOUNT
+ORDER BY ACCOUNT_ID
+LIMIT 2;
+
+-- Retrieve the third and fourth row from account table
+SELECT *
+FROM ACCOUNT
+LIMIT 2 OFFSET 2;
+
+-- retrieve year of birth, month of birth, day of birth, weekday of birth for all the individuals from the table individual
+SELECT YEAR(BIRTH_DATE) AS BIRTH_YR,
+    MONTH(BIRTH_DATE) AS BIRTH_MON,
+    DAY(BIRTH_DATE) AS BIRTH_DATE,
+    DAYOFWEEK(BIRTH_DATE) AS BIRTH_WEEK,  
+FROM INDIVIDUAL;
+
+--Write a query that returns the 17th through 25th characters of the string 'Please find the substring in this string'.
+SELECT SUBSTR('Please find the substring in this string',17,9) AS REMOVE_characters;
+
+-- Write a query that returns the absolute value and sign (-1, 0, or 1) of the number -25.76823.Also return the number rounded to the nearest hundredth
+SELECT ABS(-25.76823),
+       SIGN(-25.76823),
+       ROUND(-25.76823,2);
+
+-- Write a query that adds 30 days to the current date
+SELECT DATEADD(DAY,30,CURRENT_DATE);
+
+--Retrieve the first three letters of first name and last three letters of last name from the table individual
+SELECT SUBSTR(FNAME,1,3),SUBSTR(LNAME,-3)
+FROM INDIVIDUAL;
+
+-- Retrieve the first names in Upper case from individual whose first name consists of five characters
+SELECT UPPER(FNAME)
+FROM INDIVIDUAL
+WHERE LENGTH(FNAME)=5;
+
+-- Retrieve the maximum balance and average balance from the account table for customer ID = 1.
+SELECT MAX(AVAIL_BALANCE),AVG(AVAIL_BALANCE)
+FROM ACCOUNT
+WHERE CUST_ID=1;
+----------------------------------------------------------------------------------------------------------------------
+
+-- Construct a query to count the number of accounts held by each customer. Show the customer ID and the number of accounts for each customer
+SELECT CUST_ID,COUNT(ACCOUNT_ID)
+FROM ACCOUNT
+GROUP BY CUST_ID;
+
+-- Modify the previous query to fetch only those customers who has more than two accounts
+SELECT CUST_ID,COUNT(ACCOUNT_ID) AS TOTAL_ACC
+FROM ACCOUNT
+GROUP BY CUST_ID
+HAVING TOTAL_ACC >2;
+
+-- Retrieve first name and date of birth from individual and sort them from youngest to oldest.
+SELECT FNAME,BIRTH_DATE
+FROM INDIVIDUAL
+ORDER BY BIRTH_DATE DESC;
+
+-- From the account table, retrieve the year of account opening (year part of open_date) and average available balance (avail_balance) present in the accounts that are opened in each calendar year. Retrieve the year only if the average balance is greater than 200. Also sort the results based on calendar year.
+SELECT YEAR(OPEN_DATE),ROUND(AVG(AVAIL_BALANCE),2) AS average_available_balance 
+FROM ACCOUNT
+GROUP BY YEAR(OPEN_DATE)
+HAVING average_available_balance >200;
+
+-- Retrieve the product code and maximum pending balance for the product codes (CHK, SAV, CD)  present in account table
+SELECT PRODUCT_CD,MAX(PENDING_BALANCE)
+FROM ACCOUNT
+WHERE PRODUCT_CD IN ('CHK', 'SAV', 'CD')
+GROUP BY PRODUCT_CD;
+
+----------------------------------------------------------------------------------------------------------------------------
+-- Retrieve first name, title and department name by joining tables employee and department using department id
+SELECT *
+FROM DEPARTMENT;
+
+SELECT *
+FROM EMPLOYEE;
+
+SELECT E.FNAME,E.TITLE, D.NAME
+FROM EMPLOYEE AS E 
+    INNER JOIN
+    DEPARTMENT AS D ON
+    E.DEPT_ID=D.DEPT_ID;
+
+-- Left join table product with table product_type (product_type left join product) to retrieve product_type.name and product.name from the tables.
+SELECT*
+FROM PRODUCT;
+SELECT*
+FROM PRODUCT_TYPE;
+
+SELECT P.PRODUCT_TYPE_CD,P.NAME
+FROM PRODUCT_TYPE AS PT
+    LEFT JOIN
+    PRODUCT AS P ON 
+    PT.PRODUCT_TYPE_CD=P.PRODUCT_TYPE_CD;
+
+-- Using inner join, Retrieve the full employee name (fname followed by a space and then lname), Superior name (using superior_emp_id) from the employee table.Ex, for Susan Barker, Michael is superior
+SELECT CONCAT(E1.FNAME,' ',E1.LNAME),
+       CONCAT(E2.FNAME,' is superior')
+FROM EMPLOYEE AS E1
+    INNER JOIN
+    EMPLOYEE AS E2
+    ON E2.SUPERIOR_EMP_ID=E1.EMP_ID;
+
+-- Using subquery, retrieve the fname and lname of the employees whose superior is ‘Susan Hawthorne’ from employee
+SELECT FNAME,LNAME
+FROM EMPLOYEE
+WHERE superior_emp_id IN (SELECT emp_id 
+FROM EMPLOYEE
+WHERE FNAME='Susan' and lname='Hawthorne');
+
+SELECT *
+FROM EMPLOYEE;
+SELECT *
+FROM DEPARTMENT;
+
+--In employee table, retrieve the superior names (fname and lname) present in department 1. A person is superior if he/she is superior to atleast one person in the given department. Use sub-query concept.
+SELECT FNAME,LNAME,DEPT_ID
+FROM EMPLOYEE
+WHERE EMP_ID IN (SELECT DISTINCT SUPERIOR_EMP_ID
+FROM EMPLOYEE
+WHERE DEPT_ID=1
+);
+
+
+
