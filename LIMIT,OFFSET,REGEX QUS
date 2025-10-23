@@ -1,0 +1,139 @@
+-- Assigning the warehouse to the account 
+USE WAREHOUSE COMPUTE_WH;
+
+-- Creating a database named as SALES_DATABASE
+CREATE DATABASE IF NOT EXISTS SQL_CLASS_15;
+
+-- CREATING a schema for the SALES_DATABASE 
+CREATE SCHEMA IF NOT EXISTS SQL_CLASS_15_SCHEMA;
+
+-- USING THE DATABASE CREATED SALES_DATABASE 
+USE DATABASE SQL_CLASS_15;
+
+-- USING THE SCHEMA CREATED SALES_SCHEMA
+USE SCHEMA SQL_CLASS_15_SCHEMA;
+
+-- Creating a table 
+CREATE TABLE ORDERS_DATA (
+    order_id INT,
+    customer_name VARCHAR(100),
+    order_date DATE,
+    product_category VARCHAR(50),
+    product_name VARCHAR(100),
+    quantity INT,
+    price_per_unit DECIMAL(10,2),
+    city VARCHAR(50),
+    payment_mode VARCHAR(20)
+);
+
+
+-- Inserting some data inside the table 
+INSERT INTO ORDERS_DATA VALUES
+(101, 'Amit Shah', '2024-12-20', 'Electronics', 'Bluetooth Speaker', 2, 1500.00, 'Mumbai', 'UPI'),
+(102, 'Bhavna Patel', '2025-01-15', 'Home Decor', 'Wall Painting', 1, 3000.00, 'Ahmedabad', 'Credit Card'),
+(103, 'Amit Shah', '2025-02-18', 'Electronics', 'Earphones', 3, 500.00, 'Mumbai', 'Cash'),
+(104, 'David Raju', '2025-03-05', 'Books', 'SQL Mastery', 2, 800.00, 'Hyderabad', 'Credit Card'),
+(105, 'Bhavna Patel', '2025-03-22', 'Electronics', 'Smart Watch', 1, 7500.00, 'Ahmedabad', 'UPI'),
+(106, 'Elina Roy', '2025-03-25', 'Books', 'Learn Python', 1, 900.00, 'Kolkata', 'Cash'),
+(107, 'Amit Shah', '2025-04-01', 'Home Decor', 'Lamp Set', 2, 2000.00, 'Mumbai', 'Debit Card'),
+(108, 'David Raju', '2025-04-15', 'Electronics', 'Power Bank', 1, 1200.00, 'Hyderabad', 'UPI'),
+(109, 'Elina Roy', '2025-04-20', 'Books', 'Data Science 101', 3, 1000.00, 'Kolkata', 'Credit Card'),
+(110, 'Bhavna Patel', '2025-04-25', 'Books', 'Regex for Beginners', 2, 600.00, 'Ahmedabad', 'Cash');
+
+SELECT * FROM ORDERS_DATA;
+-- Questions to solve 
+-- Question 1 
+/*
+    Find the 2nd highest customer (based on total purchase amount) who placed at least 2 orders and used UPI or Credit Card as a payment mode.
+    For each, display:
+        1. Customer Name
+        2. Total Orders
+        3. Total Purchase Amount
+        4. Average Order Value
+        5. City
+    Apply necessary filters and use appropriate groupings. Use OFFSET to display the 2nd highest only.
+*/
+
+SELECT CUSTOMER_NAME,
+count(order_id) AS Total_Orders,
+SUM(QUANTITY*PRICE_PER_UNIT) AS Total_Purchase_Amount,
+AVG(QUANTITY*PRICE_PER_UNIT) AS Average_Order_Value,
+CITY
+FROM ORDERS_DATA
+WHERE PAYMENT_MODE IN ('UPI','Credit Card')
+group by CUSTOMER_NAME,city
+having Total_Orders >=2
+order by SUM(QUANTITY*PRICE_PER_UNIT) desc
+limit 1 offset 1;
+
+
+
+-- QUESTION 2 
+/*
+    From the ORDERS_DATA table, find all the Electronics or Book category orders where:
+    Product name contains the word ‘Power’ or ends with ‘Python’ (use regex or LIKE)
+    The order was placed in March or April 2025
+    Show: Order ID, Customer Name (in UPPERCASE), Product Name, Order Date (formatted as Month-YYYY), Quantity, and Total Price
+*/
+SELECT
+    ORDER_ID,
+    UPPER(CUSTOMER_NAME),
+    PRODUCT_NAME,
+    TO_CHAR(ORDER_DATE,'MMMM-YYYY'),
+    SUM(QUANTITY),
+    SUM(QUANTITY*PRICE_PER_UNIT) AS TOTAL_PRICE
+FROM ORDERS_DATA
+WHERE PRODUCT_CATEGORY IN('Electronics','Books') AND PRODUCT_NAME LIKE '%Power%' OR PRODUCT_NAME LIKE '%Python' and order_date BETWEEN '2025-03-01' AND '2025-04-30'
+GROUP BY customer_name,order_id, PRODUCT_NAME,order_date;
+
+--REGEXP_LIKE(PRODUCT_NAME,'POWER|Python$')
+
+
+
+SELECT ORDER_ID, UPPER(CUSTOMER_NAME) AS CUSTOMER_NAME, PRODUCT_NAME, TO_CHAR(ORDER_DATE,'MMMM-YYYY') AS MONTH_YEAR,
+SUM(QUANTITY) AS QUANTITY,
+SUM(QUANTITY * PRICE_PER_UNIT) AS TOTAL_AMOUNT
+FROM ORDERS_DATA
+WHERE PRODUCT_CATEGORY IN ('Electronics', 'Books')
+and PRODUCT_NAME LIKE '%Power%' OR PRODUCT_NAME LIKE '%Python'
+and MONTH(ORDER_DATE) IN (3,4)
+AND YEAR(ORDER_DATE) = 2025
+GROUP BY ORDER_ID, CUSTOMER_NAME, PRODUCT_NAME, ORDER_DATE;
+-- QUESTION 3 
+/*
+    Find the monthly sales summary (Month-Year wise) for each product category.
+    Only include months where the total quantity sold for that category is more than 3 units.
+    Display:
+        Month-Year (like Mar-2025)
+        Product Category
+        Total Quantity
+        Total Sales Amount
+        Average Price Per Unit (rounded to 2 decimal places)
+*/
+SELECT
+    TO_CHAR(ORDER_DATE,'MON-YYYY') AS MONTH_YEAR,
+    PRODUCT_CATEGORY,
+    SUM(QUANTITY),
+    SUM(QUANTITY*PRICE_PER_UNIT) AS TOTAL_SALES,
+    ROUND(AVG(PRICE_PER_UNIT))
+FROM ORDERS_DATA
+GROUP BY PRODUCT_CATEGORY,MONTH_YEAR
+HAVING SUM(QUANTITY)>3;
+
+
+SELECT
+TO_CHAR(ORDER_DATE, 'MON-YYYY') AS MONTH_YEAR,
+PRODUCT_CATEGORY,
+SUM(QUANTITY) AS TOTAL_QUANTITY,
+SUM(QUANTITY * PRICE_PER_UNIT) AS TOTAL_SALES_AMOUNT,
+ROUND(AVG(QUANTITY * PRICE_PER_UNIT), 2) AS AVERAGE_PRICE_PER_UNIT
+FROM ORDERS_DATA
+GROUP BY 
+TO_CHAR(ORDER_DATE, 'MON-YYYY'),
+PRODUCT_CATEGORY
+HAVING SUM(QUANTITY) >3;
+
+
+
+
+  
