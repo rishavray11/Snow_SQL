@@ -1,0 +1,163 @@
+-- ASSIGNING THE ACCOUNT TYPE 
+USE ROLE ACCOUNTADMIN;
+
+-- USING THE WAREHOUSE AVAILABLE
+USE WAREHOUSE COMPUTE_WH;
+
+-- CREATING A DATABASE NAMED AS SUBQUERIES_DATABASE
+CREATE DATABASE IF NOT EXISTS WINDOW_FUNCTIONS_DB_2;
+
+-- USING THE DATABASE CREATED
+USE DATABASE WINDOW_FUNCTIONS_DB_2;
+
+-- CREATING A SCHEMA NAMED AS SUBQUERIES_SCHEMA
+CREATE SCHEMA IF NOT EXISTS WINDOW_FUNCTIONS_SCHEMA_2;
+
+-- USING THE SCHEMA CREATED 
+USE SCHEMA WINDOW_FUNCTIONS_SCHEMA_2;
+/*
+Tables
+* `Signups(user_id, time_stamp)`
+* `Confirmations(user_id, time_stamp, action)`
+Each user may request multiple confirmation messages (either 'confirmed' or 'timeout')
+Task:
+    Write a query to find the **confirmation rate** for each user, defined as:
+    Confirmed messages / total confirmation requests
+    If a user has no requests, their rate is 0.
+    Round the result to 2 decimal places
+    Return: `user_id` and `confirmation_rate` (in any order).
+*/
+
+SELECT *
+FROM Signups;
+
+SELECT * 
+FROM Confirmations;
+
+SELECT S.USER_ID,
+DIV0 (COUNT(ACTION='confirmed'),COUNT(ACTION)) AS onfirmation_rate,
+FROM SIGNUPS AS S LEFT JOIN
+CONFIRMATIONS AS C ON C.USER_ID=S.USER_ID
+GROUP BY S.USER_ID;
+
+
+SELECT S.USER_ID,
+DIV0
+(
+SUM(CASE WHEN C.ACTION='confirmed' THEN 1 ELSE 2 END),
+COUNT(ACTION) 
+)
+FROM SIGNUPS AS S LEFT JOIN
+CONFIRMATIONS AS C ON C.USER_ID=S.USER_ID
+GROUP BY S.USER_ID;
+
+
+CREATE OR REPLACE TABLE Signups (
+    user_id INT PRIMARY KEY,
+    time_stamp DATETIME
+);
+
+INSERT INTO Signups (user_id, time_stamp) VALUES
+(3, '2020-03-21 10:16:13'),
+(7, '2020-01-04 13:57:59'),
+(2, '2020-07-29 23:09:44'),
+(6, '2020-12-09 10:39:37');
+
+
+
+CREATE OR REPLACE TABLE Confirmations (
+    user_id INT,
+    time_stamp DATETIME,
+    action string,
+    PRIMARY KEY (user_id, time_stamp),
+    FOREIGN KEY (user_id) REFERENCES Signups(user_id)
+);
+
+INSERT INTO Confirmations (user_id, time_stamp, action) VALUES
+(3, '2021-01-06 03:30:46', 'timeout'),
+(3, '2021-07-14 14:00:00', 'timeout'),
+(7, '2021-06-12 11:57:29', 'confirmed'),
+(7, '2021-06-13 12:58:28', 'confirmed'),
+(7, '2021-06-14 13:59:27', 'confirmed'),
+(2, '2021-01-22 00:00:00', 'confirmed'),
+(2, '2021-02-28 23:59:59', 'timeout');
+
+
+-- Write your MySQL query statement below
+
+
+
+
+
+-- Window Functions 
+-- Create the table
+CREATE OR REPLACE TABLE SALES_DATA (
+    SALE_ID INT,
+    SALESPERSON STRING,
+    REGION STRING,
+    SALE_AMOUNT NUMBER(10,2)
+);
+
+-- Insert sample data
+INSERT INTO SALES_DATA (SALE_ID, SALESPERSON, REGION, SALE_AMOUNT) VALUES
+(1,  'Amit',    'North', 5000),
+(2,  'Priya',   'South', 7000),
+(3,  'Rohan',   'East',  6000),
+(4,  'Anjali',  'North', 5000),
+(5,  'Sameer',  'East',  8000),
+(6,  'Meera',   'South', 7000),
+(7,  'Vikram',  'North', 9000),
+(8,  'Kunal',   'East',  6000),
+(9,  'Neha',    'South', 8500),
+(10, 'Aarav',   'North', 9000),
+(11, 'Tanya',   'East',  8000),
+(12, 'Rajesh',  'South', 7000),
+(13, 'Nikhil',  'North', 5000),
+(14, 'Simran',  'East',  6000),
+(15, 'Manish',  'South', 8500),
+(16, 'Dev',     'North', 9000),
+(17, 'Isha',    'East',  8000),
+(18, 'Alok',    'South', 8500),
+(19, 'Ritu',    'North', 5000),
+(20, 'Sneha',   'East',  6000);
+
+
+SELECT *
+FROM SALES_DATA
+ORDER BY SALE_AMOUNT DESC;
+
+--ROW_NUMBER USING PARTITION
+SELECT SALESPERSON,REGION, SALE_AMOUNT,
+ROW_NUMBER()OVER (PARTITION BY REGION ORDER BY SALE_AMOUNT DESC) AS ROW_RNK
+FROM SALES_DATA;
+
+--ROW_NUMBER WITH OUT USING PARTITION
+SELECT SALESPERSON,SALE_AMOUNT,
+ROW_NUMBER()OVER (ORDER BY SALE_AMOUNT DESC) AS ROW_RNK
+FROM SALES_DATA;
+
+--WRITE A SQL QUERY TO RETURN THE TOP 3 SALES PERSON BASED ON THEIR SALES AMOUNT
+WITH CTE AS
+(
+SELECT SALESPERSON,SALE_AMOUNT,
+ROW_NUMBER()OVER (ORDER BY SALE_AMOUNT DESC) AS RNK
+FROM SALES_DATA)
+SELECT SALESPERSON,SALE_AMOUNT
+FROM CTE
+WHERE RNK <4;
+
+
+SELECT SALESPERSON,SALE_AMOUNT,
+RANK() OVER (ORDER BY SALE_AMOUNT DESC) RNK_USING_RNKF
+FROM SALES_DATA;
+
+--WRITE A SQL QUERY TO RETURN THE TOP 3 SALES PERSON BASED ON THEIR SALES AMOUNT
+
+SELECT 
+SALESPERSON,
+SALE_AMOUNT, REGION,
+DENSE_RANK() OVER(PARTITION BY REGION ORDER BY SALE_AMOUNT DESC) AS AMT
+FROM SALES_DATA
+QUALIFY AMT <4;
+
+
