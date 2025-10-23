@@ -1,0 +1,299 @@
+create database retail_company;
+use database retail_company;
+
+CREATE TABLE sales (
+    order_id INT,
+    customer_id INT,
+    product_id INT,
+    sale_date DATE,
+    quantity INT,
+    unit_price DECIMAL(10,2)
+);
+INSERT INTO sales (order_id, customer_id, product_id, sale_date, quantity, unit_price)
+VALUES
+(1, 101, 1, '2023-08-01', 5, 20.00),
+(2, 102, 2, '2023-08-02', 3, 15.00),
+(3, 103, 1, '2023-08-02', 2, 22.50),
+(4, 101, 3, '2023-08-03', 1, 50.00),
+(5, 102, 1, '2023-08-04', 4, 18.00);
+
+SELECT *
+FROM sales;
+
+--Create a view named sales_summary that provides a summary of total sales amount for each product, ordered by product ID.
+CREATE OR REPLACE VIEW SALES_SUMMARY AS
+SELECT PRODUCT_ID,SUM(UNIT_PRICE*QUANTITY) AS TOTAL_SALES_AMT
+FROM SALES
+GROUP BY PRODUCT_ID
+ORDER BY PRODUCT_ID; 
+
+---------------------------------------------------------------------------------------------------------
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Posts (
+    PostID INT PRIMARY KEY,
+    UserID INT NOT NULL,
+    PostDate DATE NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+
+INSERT INTO Users (UserID, Username) VALUES
+(1, 'alice'),
+(2, 'bob'),
+(3, 'carol'),
+(4, 'david');
+
+INSERT INTO Posts (PostID, UserID, PostDate) VALUES
+(1, 1, '2023-08-01'),
+(2, 1, '2023-08-02'),
+(3, 1, '2023-08-05'),
+(4, 1, '2023-08-06'),
+(5, 1, '2023-08-07'),
+(6, 1, '2023-08-10'),
+(7, 1, '2023-08-15'),
+(8, 1, '2023-08-18'),
+(9, 1, '2023-08-20'),
+(10, 1, '2023-08-25'),
+(11, 1, '2023-08-27'),
+(12, 1, '2023-08-29');
+
+INSERT INTO Posts (PostID, UserID, PostDate) VALUES
+(13, 2, '2023-08-01'),
+(14, 2, '2023-08-02'),
+(15, 2, '2023-08-03'),
+(16, 2, '2023-08-04'),
+(17, 2, '2023-08-07'),
+(18, 2, '2023-08-08'),
+(19, 2, '2023-08-09'),
+(20, 2, '2023-08-15'),
+(21, 2, '2023-08-18'),
+(22, 2, '2023-08-25');
+
+
+INSERT INTO Posts (PostID, UserID, PostDate) VALUES
+(23, 3, '2023-08-05'),
+(24, 3, '2023-08-10'),
+(25, 3, '2023-08-15'),
+(26, 3, '2023-08-20'),
+(27, 3, '2023-08-28');
+
+--You're managing a database for a social media platform. Create a view named ActiveUsers that displays information about users who have posted at least 10 times in the last 30 days. The view should include the user's username and the number of posts made.
+
+CREATE OR REPLACE VIEW ActiveUsers AS
+SELECT USERNAME, COUNT(POSTID) AS NO_OF_POST
+FROM USERS AS U INNER JOIN
+POSTS AS P ON U.USERID=P.USERID
+WHERE POSTDATE BETWEEN DATEADD(DAY,-30,'2023-08-30') AND '2023-08-30'
+GROUP BY USERNAME
+HAVING COUNT(POSTID) >=10;
+-----------------------------------------------------------------------------------------------------------------
+
+-- Create Students table
+CREATE OR REPLACE TABLE Students (
+    StudentID INT,
+    StudentName STRING
+);
+
+-- Create Courses table
+CREATE OR REPLACE TABLE Courses (
+    CourseID INT,
+    CourseName STRING
+);
+
+-- Create Enrollments table
+CREATE OR REPLACE TABLE Enrollments (
+    EnrollmentID INT,
+    StudentID INT,
+    CourseID INT
+);
+
+-- Create LessonsCompleted table
+CREATE OR REPLACE TABLE LessonsCompleted (
+    LessonID INT,
+    StudentID INT,
+    CourseID INT,
+    LessonNumber INT
+);
+
+-- Insert Students
+INSERT INTO Students (StudentID, StudentName) VALUES
+(1, 'Alice'),
+(2, 'Bob'),
+(3, 'Carol'),
+(4, 'David');
+
+-- Insert Courses
+INSERT INTO Courses (CourseID, CourseName) VALUES
+(101, 'Math'),
+(102, 'Science'),
+(103, 'History'),
+(104, 'Literature');
+
+-- Insert Enrollments
+INSERT INTO Enrollments (EnrollmentID, StudentID, CourseID) VALUES
+(1, 1, 101),
+(2, 1, 102),
+(3, 2, 102),
+(4, 2, 103),
+(5, 3, 101),
+(6, 4, 104);
+
+-- Insert LessonsCompleted (sample progress)
+INSERT INTO LessonsCompleted (LessonID, StudentID, CourseID, LessonNumber) VALUES
+(1, 1, 101, 1),
+(2, 1, 101, 2),
+(3, 1, 102, 1),
+(4, 1, 102, 2),
+(5, 1, 102, 3),
+(6, 2, 102, 1),
+(7, 2, 102, 2),
+(8, 2, 103, 1),
+(9, 2, 103, 2),
+(10, 3, 101, 1),
+(11, 3, 101, 2),
+(12, 3, 101, 3),
+(13, 4, 104, 1),
+(14, 4, 104, 2),
+(15, 4, 104, 3),
+(16, 4, 104, 4),
+(17, 4, 104, 5);
+
+--You're working with a database for an online course platform. Create a view named CourseProgress that displays information about enrolled students and their course progress. The view should include the student's name, course name, and the percentage of course completion. Assume that each course has a total of 10 lessons.
+
+CREATE OR REPLACE VIEW CourseProgress AS
+SELECT STUDENTNAME,COURSENAME,
+ROUND((COUNT(DISTINCT lc.LessonNumber) / 10.0) * 100, 2) AS CompletionPercentage
+FROM STUDENTS AS STD 
+INNER JOIN ENROLLMENTS AS ENR 
+        ON STD.STUDENTID=ENR.STUDENTID
+INNER JOIN COURSES AS COR 
+        ON ENR.COURSEID=COR.COURSEID
+LEFT JOIN LESSONSCOMPLETED AS LC 
+    ON LC.STUDENTID=STD.STUDENTID AND LC.COURSEID=COR.COURSEID
+GROUP BY STUDENTNAME,COURSENAME
+ORDER BY CompletionPercentage DESC;
+
+---------------------------------------------------------------------------------------------------------
+/*MVIEW*/
+CREATE TABLE stock_prices(
+stock_symbol VARCHAR(50),
+trade_date DATE,
+closing_price FLOAT
+);
+
+INSERT INTO stock_prices (stock_symbol, trade_date, closing_price)
+VALUES
+('AAPL', '2023-08-01', 148.99),
+('AAPL', '2023-08-02', 150.23),
+('AAPL', '2023-08-03', 151.55),
+('AAPL', '2023-08-04', 149.86),
+('AAPL', '2023-08-05', 150.78);
+SELECT * FROM stock_prices;
+--Create a materialized view named stock_trends_mv that stores the average closing price trends for each stock over time, ordered by stock symbol and trade date.
+
+CREATE MATERIALIZED VIEW stock_trends_mv AS
+SELECT STOCK_SYMBOL,TRADE_DATE, AVG(CLOSING_PRICE) AS average_closing_price
+FROM stock_prices
+GROUP BY STOCK_SYMBOL,TRADE_DATE;
+
+---------------------------------------------------------------------------------------------------------------------
+
+-- Create Doctors table
+CREATE TABLE Doctors (
+    DoctorID INT PRIMARY KEY,
+    DoctorName VARCHAR(100) NOT NULL
+);
+
+-- Create Patients table
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY,
+    PatientName VARCHAR(100) NOT NULL
+);
+
+-- Create Appointments table
+CREATE TABLE Appointments (
+    AppointmentID INT PRIMARY KEY,
+    DoctorID INT NOT NULL,
+    PatientID INT NOT NULL,
+    AppointmentDate TIMESTAMP NOT NULL,
+    Status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID),
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID)
+);
+
+-- Insert into Doctors table
+INSERT INTO Doctors (DoctorID, DoctorName) VALUES
+(1, 'Dr. Smith'),
+(2, 'Dr. Johnson'),
+(3, 'Dr. Lee');
+
+-- Insert into Patients table
+INSERT INTO Patients (PatientID, PatientName) VALUES
+(101, 'Alice'),
+(102, 'Bob'),
+(103, 'Carol');
+
+-- Insert into Appointments table
+INSERT INTO Appointments (AppointmentID, DoctorID, PatientID, AppointmentDate, Status) VALUES
+(1, 1, 101, '2023-08-30 10:00:00', 'Scheduled'),
+(2, 2, 102, '2023-08-30 11:00:00', 'Completed'),
+(3, 1, 103, '2023-08-30 12:00:00', 'Scheduled');
+--You're working with a database for a healthcare system. Create a materialized view named DoctorAppointments that displays upcoming appointments for doctors. The view should include the doctor's name, patient's name, appointment date, and appointment status. Refresh the materialized view every hour
+
+CREATE MATERIALIZED VIEW DoctorAppointments AS
+SELECT DOCTORNAME,PATIENTNAME,APPOINTMENTDATE,STATUS
+FROM APPOINTMENTS AS A INNER JOIN
+DOCTORS AS D ON A.DOCTORID=D.DOCTORID
+INNER JOIN PATIENTS AS P ON A.PATIENTID=P.PATIENTID;
+
+CREATE OR REPLACE TASK Refresh_DoctorAppointments
+WAREHOUSE = COMPUTE_WH
+SCHEDULE = 'USING CRON 0 * * * * UTC'  -- every hour
+AS
+ALTER VIEW DoctorAppointments REFRESH;
+
+
+
+
+CREATE OR REPLACE MATERIALIZED VIEW DoctorAppointments AS
+SELECT 
+    D.DoctorName,
+    P.PatientName,
+    A.AppointmentDate,
+    A.Status
+FROM Appointments AS A
+JOIN Doctors AS D 
+    ON A.DoctorID = D.DoctorID
+JOIN Patients AS P 
+    ON A.PatientID = P.PatientID;
+
+
+-- 2. Create a task to refresh it every hour
+CREATE OR REPLACE TASK Refresh_DoctorAppointments
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = 'USING CRON 0 * * * * UTC'
+AS
+  ALTER MATERIALIZED VIEW DoctorAppointments REFRESH;
+
+-- 3. Start the task
+ALTER TASK Refresh_DoctorAppointments RESUME;
+
+
+SELECT *
+FROM Doctors;
+
+SELECT *
+FROM Patients;
+
+SELECT *
+FROM Appointments;
+
+
+
+
+
+
