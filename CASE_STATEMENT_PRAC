@@ -1,0 +1,346 @@
+create database case_statment_prac;
+use database case_statment_prac;
+
+CREATE TABLE Students (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    score INT
+);
+
+INSERT INTO Students (id, name, score) VALUES
+(1, 'Alice', 85),
+(2, 'Bob', 35),
+(3, 'Charlie', 90),
+(4, 'David', 55),
+(5, 'Eva', 20);
+select * from students;
+
+/*
+Pass/Fail
+You have a table Students(id, name, score).
+Write a query to display name, score, and a new column Result where:
+
+"Pass" if score ≥ 40
+
+"Fail" otherwise
+*/
+SELECT id,name,score,
+    case
+        when score >=40 then 'pass'
+        else 'fail'
+        end as Result
+FROM Students;
+-------------------------------------------------------------------------
+CREATE TABLE Numbers (
+    num INT
+);
+INSERT INTO Numbers (num) VALUES
+(1), (2), (3), (4), (5), (10), (15);
+
+select * from Numbers;
+
+/*
+Even/Odd
+You have a table Numbers(num).
+Write a query to display num and whether it is "Even" or "Odd".
+*/
+SELECT NUM,
+CASE
+    WHEN NUM %2=0 THEN 'EVEN' ELSE 'ODD'
+END AS NUMBER_CHECK
+FROM Numbers;
+----------------------------------------------------------------------------------
+CREATE TABLE Marks (
+    student_id INT,
+    marks INT
+);
+
+INSERT INTO Marks (student_id, marks) VALUES
+(1, 95),
+(2, 82),
+(3, 76),
+(4, 68),
+(5, 45);
+SELECT * FROM Marks;
+
+/*
+Grade Assignment
+You have a table Marks(student_id, marks).
+Assign grades based on marks:
+≥ 90 → "A"
+80–89 → "B"
+70–79 → "C"
+Otherwise → "Fail"
+*/
+SELECT STUDENT_ID,MARKS,
+CASE
+    WHEN MARKS >=90 THEN 'A'
+    WHEN MARKS BETWEEN 80 AND 90 THEN 'B'
+    WHEN MARKS BETWEEN 70 AND 79 THEN 'C'
+    ELSE 'FAIL'
+END AS grades
+FROM Marks;
+-----------------------------------------------------------------------
+CREATE TABLE Sales (
+    emp_id INT,
+    sales_amount DECIMAL(10,2)
+);
+
+INSERT INTO Sales (emp_id, sales_amount) VALUES
+(101, 12000.00),
+(102, 8000.00),
+(103, 4000.00),
+(104, 15000.00),
+(105, 5000.00);
+
+SELECT * FROM Sales;
+
+/*Sales Bonus
+You have a table Sales(emp_id, sales_amount).
+Add a column Bonus:
+10% of sales if sales_amount > 10000
+5% of sales if between 5000 and 10000
+No bonus otherwise
+*/
+SELECT EMP_ID,SALES_AMOUNT,
+CASE 
+    WHEN SALES_AMOUNT > 10000 THEN '10%'
+    WHEN SALES_AMOUNT>5000 AND SALES_AMOUNT <10000 THEN '5%'
+    ELSE 'NO BONUS'
+END AS Bonus
+FROM Sales;
+--------------------------------------------------------------------------
+CREATE TABLE Weather (
+    city VARCHAR(50),
+    temperature DECIMAL(5,2)
+);
+
+INSERT INTO Weather (city, temperature) VALUES
+('Delhi', 42.0),
+('Mumbai', 30.5),
+('Shimla', 18.0),
+('Chennai', 35.2),
+('Kolkata', 28.5);
+SELECT * FROM Weather;
+
+/*
+Weather Description
+You have a table Weather(city, temperature).
+Add a column Weather_Type:
+"Hot" if temperature > 30
+"Warm" if between 20 and 30
+"Cold" otherwise
+*/
+SELECT CITY,TEMPERATURE,
+CASE
+    WHEN TEMPERATURE >30 THEN 'HOT'
+    WHEN TEMPERATURE BETWEEN 20 AND 30 THEN 'WARM'
+    ELSE 'COLD'
+END AS Weather_Type
+FROM Weather;
+---------------------------------------------------------------
+CREATE TABLE Students1 (
+    student_id INT,
+    name VARCHAR(50),
+    score INT
+);
+
+INSERT INTO Students1 VALUES
+(1, 'Alice', 95),
+(2, 'Bob', 82),
+(3, 'Charlie', 78),
+(4, 'David', 60),
+(5, 'Eve', 45);
+
+/*Multi-Condition Grade Assignment
+Table: Students
+Assign:
+A+ → score ≥ 90
+A → 80–89
+B → 70–79
+C → 50–69
+F → below 50
+Also add a column showing "Pass" or "Fail".*/
+
+SELECT STUDENT_ID,NAME,SCORE,
+CASE 
+    WHEN SCORE >=90 THEN 'A+'
+    WHEN SCORE BETWEEN 80 AND 89 THEN 'A'
+    WHEN SCORE BETWEEN 70 AND 79 THEN 'B'
+    WHEN SCORE BETWEEN 50 AND 69 THEN 'C'
+    ELSE 'F'
+END AS GRADE,
+CASE
+    WHEN SCORE > 50 THEN 'PASS'
+    ELSE 'FAIL'
+END AS STATUS
+FROM Students1;
+-------------------------------------------------------
+CREATE TABLE Sales1 (
+    emp_id INT,
+    emp_name VARCHAR(50),
+    sales_amount DECIMAL(10,2)
+);
+
+INSERT INTO Sales1 VALUES
+(101, 'John', 18000),
+(102, 'Mary', 12500),
+(103, 'Steve', 8500),
+(104, 'Sara', 3000);
+
+/*Bonus Calculation Based on Sales
+Table: Sales
+Rules:
+Sales ≥ 15000 → Bonus = 15% of sales
+10000–14999 → Bonus = 10%
+5000–9999 → Bonus = 5%
+< 5000 → Bonus = 0
+Return emp_id, sales_amount, and calculated bonus.*/
+
+SELECT emp_id,SALES_AMOUNT,
+CASE 
+    WHEN SALES_AMOUNT >=15000 THEN SALES_AMOUNT*.15
+    WHEN SALES_AMOUNT BETWEEN 10000 AND 14999 THEN SALES_AMOUNT*.10
+    WHEN SALES_AMOUNT BETWEEN 5000 AND 9999 THEN SALES_AMOUNT*.05
+    WHEN SALES_AMOUNT <5000 THEN 0
+    ELSE 'NA'
+END AS calculated_bonus
+FROM Sales1;
+
+SELECT 
+    emp_id,
+    sales_amount,
+    CASE 
+        WHEN sales_amount >= 15000 THEN '15%'
+        WHEN sales_amount BETWEEN 10000 AND 14999 THEN '10%'
+        WHEN sales_amount BETWEEN 5000 AND 9999 THEN '5%'
+        ELSE '0%'
+    END AS bonus_percentage,
+    CASE 
+        WHEN sales_amount >= 15000 THEN sales_amount * 0.15
+        WHEN sales_amount BETWEEN 10000 AND 14999 THEN sales_amount * 0.10
+        WHEN sales_amount BETWEEN 5000 AND 9999 THEN sales_amount * 0.05
+        ELSE 0
+    END AS calculated_bonus
+FROM Sales1;
+---------------------------------------------------------------
+CREATE TABLE Weather1 (
+    city VARCHAR(50),
+    temperature INT
+);
+
+INSERT INTO Weather1 VALUES
+('Delhi', 38),
+('Mumbai', 30),
+('Shimla', 15);
+
+SELECT * FROM Weather1;
+/*
+Categorize Temperature Ranges
+Table: Weather
+Rules:
+Temp > 35 → "Hot"
+Temp BETWEEN 20 AND 35 → "Warm"
+Temp < 20 → "Cold"
+Also create a column "Travel Recommendation":
+"Avoid outdoor" if Hot
+"Good weather" if Warm
+"Carry jacket" if Cold
+*/
+SELECT CITY,
+    TEMPERATURE,
+CASE
+    WHEN TEMPERATURE > 35 THEN 'HOT'
+    WHEN TEMPERATURE BETWEEN 20 AND 35 THEN 'WARM'
+    ELSE 'COLD'
+END AS WEATHER,
+CASE
+     WHEN TEMPERATURE >35 THEN 'AVOID OUTDOOR'
+     WHEN TEMPERATURE BETWEEN 20 AND 35 THEN 'Good weather'
+     ELSE 'Carry jacket'
+END AS Travel_Recommendation
+FROM Weather1;
+----------------------------------------------------------
+CREATE TABLE Income (
+    person_id INT,
+    name VARCHAR(50),
+    annual_income DECIMAL(12,2)
+);
+
+INSERT INTO Income VALUES
+(1, 'Raj', 1200000),
+(2, 'Anita', 750000),
+(3, 'Karan', 400000),
+(4, 'Pooja', 200000);
+select * from Income;
+
+/*
+ax Slab Assignment
+Table: Income
+Tax slabs:
+10,00,000 → 30%
+5,00,001–10,00,000 → 20%
+2,50,001–5,00,000 → 5%
+≤ 2,50,000 → 0%
+Return person_id, income, tax_rate, and estimated_tax_amount
+*/
+
+SELECT person_id,income,
+CASE
+    WHEN income=100000 then income*.30
+    when income between 500001 and 1000000 then income*.20
+    when income between 250001 and 500000 then income*.05
+    when income <250000 then 0
+end as tax_rate
+FROM Income;
+
+
+SELECT 
+    person_id,
+    income,
+    CASE
+        WHEN income > 1000000 THEN 0.30
+        WHEN income BETWEEN 500001 AND 1000000 THEN 0.20
+        WHEN income BETWEEN 250001 AND 500000 THEN 0.05
+        WHEN income <= 250000 THEN 0
+    END AS tax_rate,
+    CASE
+        WHEN income > 1000000 THEN income * 0.30
+        WHEN income BETWEEN 500001 AND 1000000 THEN income * 0.20
+        WHEN income BETWEEN 250001 AND 500000 THEN income * 0.05
+        WHEN income <= 250000 THEN 0
+    END AS estimated_tax_amount
+FROM Income;
+--XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+CREATE TABLE Products (
+    product_id INT,
+    product_name VARCHAR(50),
+    stock INT,
+    discontinued BOOLEAN
+);
+
+INSERT INTO Products VALUES
+(1, 'Laptop', 70, FALSE),
+(2, 'Mobile', 25, FALSE),
+(3, 'Tablet', 0, FALSE),
+(4, 'Camera', 0, TRUE);
+SELECT* FROM Products;
+/*
+Product Stock Status
+Table: Products
+Rules:
+If stock > 50 → "In Stock"
+If stock BETWEEN 1 AND 50 → "Low Stock"
+If stock = 0 and discontinued = FALSE → "Out of Stock - Restock Soon"
+If stock = 0 and discontinued = TRUE → "Discontinued"
+*/
+SELECT PRODUCT_ID,PRODUCT_NAME,
+CASE
+    WHEN STOCK >50 THEN 'IN STOCK'
+    WHEN STOCK BETWEEN 1 AND 50 THEN 'LOW STOCK'
+    WHEN STOCK =0 AND DISCONTINUED='TRUE' THEN 'DISCOUNTINUED'
+    ELSE 'OUT OF STOCK - RESTOCK SOON'
+END AS STOCK_UPDATE,
+FROM Products; 
+
+
