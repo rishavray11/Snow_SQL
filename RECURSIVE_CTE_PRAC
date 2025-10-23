@@ -1,0 +1,74 @@
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    ManagerID INT NULL
+);
+INSERT INTO Employees (EmployeeID, Name, ManagerID) VALUES
+(1, 'Alice', NULL),
+(2, 'Bob', 1),
+(3, 'Charlie', 1),
+(4, 'David', 2),
+(5, 'Eve', 2),
+(6, 'Frank', 3);
+
+CREATE TABLE Numbers (
+    Number INT PRIMARY KEY
+);
+
+INSERT INTO Numbers (Number) VALUES
+(1), (2), (3), (4), (5);
+
+CREATE TABLE Categories (
+    CategoryID INT PRIMARY KEY,
+    CategoryName VARCHAR(50),
+    ParentCategoryID INT NULL
+);
+
+INSERT INTO Categories (CategoryID, CategoryName, ParentCategoryID) VALUES
+(1, 'Electronics', NULL),
+(2, 'Computers', 1),
+(3, 'Laptops', 2),
+(4, 'Desktops', 2),
+(5, 'Smartphones', 1);
+
+SELECT * FROM EMPLOYEES;
+SELECT * FROM NUMBERS;
+SELECT * FROM CATEGORIES;
+
+--Write a recursive CTE to list all employees and their reporting hierarchy starting from the CEO (ManagerID is NULL).
+WITH CTE AS(
+SELECT EMPLOYEEID,NAME,MANAGERID
+FROM EMPLOYEES
+WHERE MANAGERID IS NULL
+
+UNION ALL
+SELECT E.EMPLOYEEID,E.NAME,E.MANAGERID
+FROM EMPLOYEES AS E
+JOIN CTE AS E1 ON E.MANAGERID=E1.EMPLOYEEID
+
+)
+SELECT * FROM CTE;
+
+--Write a recursive CTE to calculate the factorial of numbers from 1 to 5.
+WITH CTE1 AS(
+SELECT 1 AS N
+UNION ALL
+SELECT N+1
+FROM CTE1
+)
+SELECT * FROM CTE1;
+
+--Write a recursive CTE to generate a sequence of numbers from 1 to 10.
+WITH CTE AS(
+SELECT 1 AS N
+
+UNION ALL
+
+SELECT N+1
+FROM CTE
+WHERE N<10
+)
+SELECT * FROM CTE;
+
+--Use a recursive CTE to calculate the cumulative sum of numbers from 1 to 5
+WITH 
